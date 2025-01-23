@@ -5,12 +5,19 @@ from typing import Any
 
 
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('id', 'table_number', 'status', 'total_price', 'created_at', 'view_items')
-    list_filter = ('status', 'created_at', 'updated_at')
-    search_fields = ('id', 'table_number')
-    readonly_fields = ('total_price', 'created_at', 'updated_at')
+    list_display = (
+        "id",
+        "table_number",
+        "status",
+        "total_price",
+        "created_at",
+        "view_items",
+    )
+    list_filter = ("status", "created_at", "updated_at")
+    search_fields = ("id", "table_number")
+    readonly_fields = ("total_price", "created_at", "updated_at")
     list_per_page = 20
-    ordering = ('-created_at',)  # naqo
+    ordering = ("-created_at",)  # naqo
 
     # Show items in a formatted way in the admin
     def view_items(self, obj: Any) -> str:
@@ -36,32 +43,30 @@ class OrderAdmin(admin.ModelAdmin):
                 "".join(
                     format_html(
                         "<tr><td style='border: 1px solid #ddd; padding: 8px;'>{}</td><td style='border: 1px solid #ddd; padding: 8px;'>{}</td><td style='border: 1px solid #ddd; padding: 8px;'>${}</td></tr>",
-                        item['name'], item['quantity'], item['price']
-                    ) for item in items
+                        item["name"],
+                        item["quantity"],
+                        item["price"],
+                    )
+                    for item in items
                 )
-            )
+            ),
         )
+
     view_items.short_description = "Items Ordered"
 
     # Add a custom action to mark selected orders as paid
-    actions = ['mark_as_paid']
+    actions = ["mark_as_paid"]
 
     def mark_as_paid(self, request: Any, queryset: Any) -> None:
         updated_count = queryset.update(status=Order.STATUS_PAID)
-        self.message_user(
-            request,
-            f"{updated_count} order(s) marked as paid."
-        )
+        self.message_user(request, f"{updated_count} order(s) marked as paid.")
+
     mark_as_paid.short_description = "Mark selected orders as Paid"
 
     # Customize the form view
     fieldsets = (
-        (None, {
-            'fields': ('table_number', 'status', 'items', 'total_price')
-        }),
-        ('Timestamps', {
-            'fields': ('created_at', 'updated_at')
-        }),
+        (None, {"fields": ("table_number", "status", "items", "total_price")}),
+        ("Timestamps", {"fields": ("created_at", "updated_at")}),
     )
 
 

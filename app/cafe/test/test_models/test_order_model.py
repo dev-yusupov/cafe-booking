@@ -7,8 +7,8 @@ class OrderModelTest(TestCase):
     def setUp(self):
         self.order = Order.objects.create(
             table_number=1,
-            items=[{'name': 'Coffee', 'quantity': 2, 'price': 5.00}],
-            status=Order.STATUS_PENDING
+            items=[{"name": "Coffee", "quantity": 2, "price": 5.00}],
+            status=Order.STATUS_PENDING,
         )
 
     def test_order_creation(self):
@@ -17,27 +17,27 @@ class OrderModelTest(TestCase):
         self.assertEqual(self.order.status, Order.STATUS_PENDING)
 
     def test_order_string_representation(self):
-        self.assertEqual(str(self.order), f"Order {self.order.id} at table {self.order.table_number}")
+        self.assertEqual(
+            str(self.order), f"Order {self.order.id} at table {self.order.table_number}"
+        )
 
     def test_total_price_calculation(self):
-        self.order.items = [{'name': 'Tea', 'quantity': 1, 'price': 3.00}]
+        self.order.items = [{"name": "Tea", "quantity": 1, "price": 3.00}]
         self.order.save()
         self.assertEqual(self.order.total_price, 3.00)
 
     def test_table_number_cannot_be_negative(self):
         invalid_order = Order(
             table_number=-1,
-            items=[{'name': 'Coffee', 'quantity': 2, 'price': 5.00}],
-            status=Order.STATUS_PENDING
+            items=[{"name": "Coffee", "quantity": 2, "price": 5.00}],
+            status=Order.STATUS_PENDING,
         )
         with self.assertRaises(ValidationError):
             invalid_order.full_clean()
 
     def test_total_price_with_empty_items(self):
         empty_order = Order.objects.create(
-            table_number=2,
-            items=[],
-            status=Order.STATUS_PENDING
+            table_number=2, items=[], status=Order.STATUS_PENDING
         )
         self.assertEqual(empty_order.total_price, 0.00)
 
@@ -45,16 +45,16 @@ class OrderModelTest(TestCase):
         multiple_items_order = Order.objects.create(
             table_number=3,
             items=[
-                {'name': 'Coffee', 'quantity': 2, 'price': 5.00},
-                {'name': 'Tea', 'quantity': 1, 'price': 3.00}
+                {"name": "Coffee", "quantity": 2, "price": 5.00},
+                {"name": "Tea", "quantity": 1, "price": 3.00},
             ],
-            status=Order.STATUS_PENDING
+            status=Order.STATUS_PENDING,
         )
         self.assertEqual(multiple_items_order.total_price, 13.00)
 
     def test_update_order(self):
         self.order.table_number = 2
-        self.order.items = [{'name': 'Latte', 'quantity': 1, 'price': 4.00}]
+        self.order.items = [{"name": "Latte", "quantity": 1, "price": 4.00}]
         self.order.save()
         self.order.refresh_from_db()
         self.assertEqual(self.order.table_number, 2)
@@ -70,8 +70,8 @@ class OrderModelTest(TestCase):
         # Create
         new_order = Order.objects.create(
             table_number=4,
-            items=[{'name': 'Espresso', 'quantity': 3, 'price': 2.50}],
-            status=Order.STATUS_PENDING
+            items=[{"name": "Espresso", "quantity": 3, "price": 2.50}],
+            status=Order.STATUS_PENDING,
         )
         self.assertEqual(new_order.table_number, 4)
         self.assertEqual(new_order.total_price, 7.50)

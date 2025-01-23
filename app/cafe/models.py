@@ -4,21 +4,25 @@ from django.core.validators import MinValueValidator
 
 
 class Order(models.Model):
-    STATUS_PENDING: str = 'pending'
-    STATUS_READY: str = 'ready'
-    STATUS_PAID: str = 'paid'
+    STATUS_PENDING: str = "pending"
+    STATUS_READY: str = "ready"
+    STATUS_PAID: str = "paid"
 
     STATUS_CHOICES: List = [
-        (STATUS_PENDING, 'Pending'),
-        (STATUS_READY, 'Ready'),
-        (STATUS_PAID, 'Paid'),
+        (STATUS_PENDING, "Pending"),
+        (STATUS_READY, "Ready"),
+        (STATUS_PAID, "Paid"),
     ]
 
     id = models.AutoField(primary_key=True, editable=False)
     table_number = models.IntegerField(validators=[MinValueValidator(1)], db_index=True)
     items = models.JSONField()
-    total_price = models.DecimalField(max_digits=10, decimal_places=2, editable=False, default=0)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING, db_index=True)
+    total_price = models.DecimalField(
+        max_digits=10, decimal_places=2, editable=False, default=0
+    )
+    status = models.CharField(
+        max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING, db_index=True
+    )
     created_at = models.DateTimeField(auto_now_add=True, editable=False, db_index=True)
     updated_at = models.DateTimeField(auto_now=True, db_index=True)
 
@@ -27,15 +31,17 @@ class Order(models.Model):
         super().save(*args, **kwargs)
 
     def _calculate_total_price(self) -> float:
-        self.total_price = sum(item['price'] * item['quantity'] for item in self.items if 'price' in item)
+        self.total_price = sum(
+            item["price"] * item["quantity"] for item in self.items if "price" in item
+        )
 
     def get_status_display(self) -> str:
-        return dict(self.STATUS_CHOICES).get(self.status, 'Unknown')
+        return dict(self.STATUS_CHOICES).get(self.status, "Unknown")
 
     def __str__(self) -> str:
         return f"Order {self.id} at table {self.table_number}"
 
-    class Meta: # noqa
-        ordering = ['-created_at']
-        verbose_name = 'Order'
-        verbose_name_plural = 'Orders'
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Order"
+        verbose_name_plural = "Orders"
