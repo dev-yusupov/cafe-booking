@@ -5,9 +5,14 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.db.models.query import QuerySet
 
+from rest_framework.viewsets import GenericViewSet
+from rest_framework import mixins, status, request, response
+
 from typing import Optional, Dict, Any
 import json
+
 from .models import Order
+from .serializers import OrderSerializer
 
 
 class OrderView(View):
@@ -39,7 +44,7 @@ class OrderUpdateStatusView(View):
         order: Optional[Order] = get_object_or_404(Order, id=order_id)
         data: Dict[str, Any] = json.loads(request.body)
         status: Optional[str] = data.get('status')
-        
+
         if status in [Order.STATUS_PENDING, Order.STATUS_READY, Order.STATUS_PAID]:
             order.status = status
             order.save()
@@ -53,3 +58,23 @@ class OrderDeleteView(DeleteView):
         order: Optional[Order] = get_object_or_404(Order, id=order_id)
         order.delete()
         return JsonResponse({'status': 'deleted'}, status=204)
+
+
+class OrderViewSet(GenericViewSet, mixins.CreateModelMixin, mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+
+    def create(self, request: request.Request, *args, **kwargs) -> response.Response:
+        return super().create(request, *args, **kwargs)
+
+    def list(self, request: request.Request, *args, **kwargs) -> response.Response:
+        return super().list(request, *args, **kwargs)
+
+    def retrieve(self, request: request.Request, *args, **kwargs) -> response.Response:
+        return super().retrieve(request, *args, **kwargs)
+
+    def update(self, request: request.Request, *args, **kwargs) -> response.Response:
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request: request.Request, *args, **kwargs) -> response.Response:
+        return super().destroy(request, *args, **kwargs)

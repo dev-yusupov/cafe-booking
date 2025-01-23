@@ -12,6 +12,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "cafe",
+    "rest_framework",
+    "drf_spectacular",
 ]
 
 MIDDLEWARE = [
@@ -77,3 +79,14 @@ USE_TZ = True
 STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+REST_FRAMEWORK = {
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Cafe Booking API",
+    "DESCRIPTION": "API documentation for the Cafe Booking project",
+    "VERSION": "1.0.0",
+    # ...other settings...
+}

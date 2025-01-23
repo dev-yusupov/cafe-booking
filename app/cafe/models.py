@@ -16,7 +16,7 @@ class Order(models.Model):
 
     id = models.AutoField(primary_key=True, editable=False)
     table_number = models.IntegerField(validators=[MinValueValidator(1)], db_index=True)
-    items = models.JSONField(db_index=True)
+    items = models.JSONField()
     total_price = models.DecimalField(max_digits=10, decimal_places=2, editable=False, default=0)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True, editable=False, db_index=True)
@@ -29,10 +29,11 @@ class Order(models.Model):
     def _calculate_total_price(self) -> float:
         self.total_price = sum(item['price'] * item['quantity'] for item in self.items if 'price' in item)
 
+    def get_status_display(self) -> str:
+        return dict(self.STATUS_CHOICES).get(self.status, 'Unknown')
+
     def __str__(self) -> str:
         return f"Order {self.id} at table {self.table_number}"
-
-
 
     class Meta: # noqa
         ordering = ['-created_at']
