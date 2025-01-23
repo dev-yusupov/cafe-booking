@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Order List</h1>
+    <div class="mb-4">
+        <label for="filterTableNumber">Filter by Table Number:</label>
+        <input type="number" id="filterTableNumber" class="form-control" placeholder="Enter table number">
+    </div>
+    <div class="mb-4">
+        <label for="filterStatus">Filter by Status:</label>
+        <select id="filterStatus" class="form-control">
+            <option value="">All</option>
+            <option value="Pending">Pending</option>
+            <option value="Completed">Completed</option>
+            <option value="Cancelled">Cancelled</option>
+        </select>
+    </div>
+    <button type="button" class="btn btn-primary mb-4" data-toggle="modal" data-target="#createOrderModal">
+        Create New Order
+    </button>
+    <table class="table table-striped">
+        <thead class="thead-dark">
+            <tr>
+                <th>ID</th>
+                <th>Table Number</th>
+                <th>Items</th>
+                <th>Total Price</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="orderList">
+            {% for order in orders %}
+            <tr class="{% if order.status == 'pending' %}table-warning{% elif order.status == 'ready' %}table-info{% elif order.status == 'paid' %}table-success{% endif %}">
+                <td><a href="{% url 'order_detail' order.id %}">{{ order.id }}</a></td>
+                <td>{{ order.table_number }}</td>
+                <td>
+                    <ul>
+                        {% for item in order.items %}
+                        <li>{{ item.name }} ({{ item.quantity }})</li>
+                        {% endfor %}
+                    </ul>
+                </td>
+                <td>{{ order.total_price }}</td>
+                <td>{{ order.get_status_display }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="createOrderModal" tabindex="-1" role="dialog" aria-labelledby="createOrderModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createOrderModalLabel">Create New Order</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="createOrderForm">
+                    <div class="form-group">
+                        <label for="tableNumber">Table Number</label>
+                        <input type="number" class="form-control" id="tableNumber" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="name">Item Name</label>
+                        <input type="text" class="form-control" id="name">
+                    </div>
+                    <div class="form-group">
+                        <label for="quantity">Item Quantity</label>
+                        <input type="number" class="form-control" id="quantity">
+                    </div>
+                    <div class="form-group">
+                        <label for="price">Item Price</label>
+                        <input type="number" class="form-control" id="price">
+                    </div>
+                    <button type="button" class="btn btn-secondary" id="addItemButton">Add Item</button>
+                    <div class="form-group mt-3">
+                        <label for="items">Items</label>
+                        <ul id="itemsList" class="list-group"></ul>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Create Order</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+<script>
+    const items = [];
+
+    document.getElementById('addItemButton').addEventListener('click', function () {
+        const itemName = document.getElementById('name').value;
+        const itemQuantity = document.getElementById('quantity').value;
+        const itemPrice = document.getElementById('price').value;
+
+        if (itemName && itemQuantity) {
+            items.push({ name: itemName, quantity: parseInt(itemQuantity), price: parseFloat(itemPrice) });
+            const itemElement = document.createElement('li');
+            itemElement.className = 'list-group-item';
+            itemElement.textContent = `${itemName} (${itemQuantity})`;
+            document.getElementById('itemsList').appendChild(itemElement);
+            document.getElementById('name').value = '';
+            document.getElementById('quantity').value = '';
+            document.getElementById('price').value = '';
+        }
+    });
+
+    document.getElementById('createOrderForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+        const tableNumber = document.getElementById('tableNumber').value;
+        fetch("{% url 'order_create' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ table_number: tableNumber, items: items })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'created') {
+                    location.reload();
+                } else {
+                    alert('Error creating order');
+                }
+            });
+    });
+
+    document.getElementById('filterTableNumber').addEventListener('input', function () {
+        filterOrders();
+    });
+
+    document.getElementById('filterStatus').addEventListener('change', function () {
+        filterOrders();
+    });
+
+    function filterOrders() {
+        const filterTableNumber = document.getElementById('filterTableNumber').value;
+        const filterStatus = document.getElementById('filterStatus').value;
+        const rows = document.querySelectorAll('#orderList tr');
+        rows.forEach(row => {
+            const tableNumber = row.children[1].textContent;
+            const status = row.children[4].textContent;
+            if ((filterTableNumber === '' || tableNumber === filterTableNumber) &&
+                (filterStatus === '' || status === filterStatus)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+</script>
+
+{% endblock %}

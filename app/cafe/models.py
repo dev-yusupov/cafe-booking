@@ -27,7 +27,14 @@ class Order(models.Model):
         super().save(*args, **kwargs)
 
     def _calculate_total_price(self) -> float:
-        self.total_price = sum(item['price'] * item['quantity'] for item in self.items)
+        self.total_price = sum(item['price'] * item['quantity'] for item in self.items if 'price' in item)
 
     def __str__(self) -> str:
         return f"Order {self.id} at table {self.table_number}"
+
+
+
+    class Meta: # noqa
+        ordering = ['-created_at']
+        verbose_name = 'Order'
+        verbose_name_plural = 'Orders'
