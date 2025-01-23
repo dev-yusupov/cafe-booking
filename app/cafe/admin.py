@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from .models import Order
+from typing import Any
 
 
 class OrderAdmin(admin.ModelAdmin):
@@ -12,7 +13,7 @@ class OrderAdmin(admin.ModelAdmin):
     ordering = ('-created_at',)  # naqo
 
     # Show items in a formatted way in the admin
-    def view_items(self, obj):
+    def view_items(self, obj: Any) -> str:
         items = obj.items
         if not items:
             return "No items"
@@ -45,7 +46,7 @@ class OrderAdmin(admin.ModelAdmin):
     # Add a custom action to mark selected orders as paid
     actions = ['mark_as_paid']
 
-    def mark_as_paid(self, request, queryset):
+    def mark_as_paid(self, request: Any, queryset: Any) -> None:
         updated_count = queryset.update(status=Order.STATUS_PAID)
         self.message_user(
             request,
