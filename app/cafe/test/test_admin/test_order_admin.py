@@ -17,31 +17,49 @@ class OrderAdminTest(TestCase):
         self.factory = RequestFactory()
 
     def test_list_display(self):
+        """
+        Test the list display configuration.
+        """
         self.assertEqual(
             self.order_admin.list_display,
             ("id", "table_number", "status", "total_price", "created_at", "view_items"),
         )
 
     def test_list_filter(self):
+        """
+        Test the list filter configuration.
+        """
         self.assertEqual(
             self.order_admin.list_filter, ("status", "created_at", "updated_at")
         )
 
     def test_search_fields(self):
+        """
+        Test the search fields configuration.
+        """
         self.assertEqual(self.order_admin.search_fields, ("id", "table_number"))
 
     def test_readonly_fields(self):
+        """
+        Test the readonly fields configuration.
+        """
         self.assertEqual(
             self.order_admin.readonly_fields,
             ("total_price", "created_at", "updated_at"),
         )
 
     def test_view_items(self):
+        """
+        Test the view items method.
+        """
         items_html = self.order_admin.view_items(self.order)
         self.assertIn("<table", items_html)
         self.assertIn("Coffee", items_html)
 
     def test_mark_as_paid(self):
+        """
+        Test the mark as paid action.
+        """
         request = self.factory.get("/")
         setattr(request, "session", "session")
         messages = FallbackStorage(request)
@@ -52,6 +70,9 @@ class OrderAdminTest(TestCase):
         self.assertEqual(self.order.status, Order.STATUS_PAID)
 
     def test_fieldsets(self):
+        """
+        Test the fieldsets configuration.
+        """
         self.assertEqual(
             self.order_admin.fieldsets,
             (

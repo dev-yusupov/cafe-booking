@@ -2,7 +2,6 @@ from django.test import TestCase
 from django.core.exceptions import ValidationError
 from cafe.models import Order
 
-
 class OrderModelTest(TestCase):
     def setUp(self):
         self.order = Order.objects.create(
@@ -12,21 +11,33 @@ class OrderModelTest(TestCase):
         )
 
     def test_order_creation(self):
+        """
+        Test the creation of an order.
+        """
         self.assertEqual(self.order.table_number, 1)
         self.assertEqual(self.order.total_price, 10.00)
         self.assertEqual(self.order.status, Order.STATUS_PENDING)
 
     def test_order_string_representation(self):
+        """
+        Test the string representation of an order.
+        """
         self.assertEqual(
             str(self.order), f"Order {self.order.id} at table {self.order.table_number}"
         )
 
     def test_total_price_calculation(self):
+        """
+        Test the total price calculation of an order.
+        """
         self.order.items = [{"name": "Tea", "quantity": 1, "price": 3.00}]
         self.order.save()
         self.assertEqual(self.order.total_price, 3.00)
 
     def test_table_number_cannot_be_negative(self):
+        """
+        Test that the table number cannot be negative.
+        """
         invalid_order = Order(
             table_number=-1,
             items=[{"name": "Coffee", "quantity": 2, "price": 5.00}],
@@ -36,12 +47,18 @@ class OrderModelTest(TestCase):
             invalid_order.full_clean()
 
     def test_total_price_with_empty_items(self):
+        """
+        Test the total price calculation with empty items.
+        """
         empty_order = Order.objects.create(
             table_number=2, items=[], status=Order.STATUS_PENDING
         )
         self.assertEqual(empty_order.total_price, 0.00)
 
     def test_total_price_with_multiple_items(self):
+        """
+        Test the total price calculation with multiple items.
+        """
         multiple_items_order = Order.objects.create(
             table_number=3,
             items=[
@@ -53,6 +70,9 @@ class OrderModelTest(TestCase):
         self.assertEqual(multiple_items_order.total_price, 13.00)
 
     def test_update_order(self):
+        """
+        Test updating an order.
+        """
         self.order.table_number = 2
         self.order.items = [{"name": "Latte", "quantity": 1, "price": 4.00}]
         self.order.save()
@@ -61,12 +81,18 @@ class OrderModelTest(TestCase):
         self.assertEqual(self.order.total_price, 4.00)
 
     def test_delete_order(self):
+        """
+        Test deleting an order.
+        """
         order_id = self.order.id
         self.order.delete()
         with self.assertRaises(Order.DoesNotExist):
             Order.objects.get(id=order_id)
 
     def test_order_crud_operations(self):
+        """
+        Test CRUD operations on an order.
+        """
         # Create
         new_order = Order.objects.create(
             table_number=4,
